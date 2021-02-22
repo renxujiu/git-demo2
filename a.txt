@@ -1,3 +1,13 @@
 aaa
 333122
-
+/**
+     * 砍价活动业绩列表
+     *
+     * @param bt  BsTable实体
+     * @param dto 搜索dto
+     * @return
+     */
+    @PostMapping("listPerformance")
+    public BootstrapTableJson listPerformance(BsTable bt, BargainPerformanceSearchDTO dto) {
+        return bargainPerformanceService.listPerformance(bt, dto);
+    }
