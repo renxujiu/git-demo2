@@ -1,3 +1,28 @@
 aaa
 333122
-
+@Override
+    public BootstrapTableJson listCutRecord(BsTable bt, BargainCutRecordSearchDTO dto) {
+        //解析日期
+        StatisticsTimeInfoVO timeInfoVO = benefitAnalysisService.parseDate(dto.getType(), dto.getStart(), dto.getEnd());
+        String startTime = timeInfoVO.getStart();
+        String endTime = timeInfoVO.getEnd();
+        StringBuilder sql = new StringBuilder();
+        Map<String, Object> param = new HashMap<>(16);
+        param.put("activityId", dto.getActivityId());
+        param.put("deptId", dto.getDeptId());
+        param.put("platform", dto.getPlatform());
+        sql.append("select b.member_head_pic,b.member_id,b.member_name,b.create_time,b.reduce_money from")
+                .append(" (select t1.id from base_reduce_activity_record t1 where t1.activity_id = :activityId and t1.record_type = 'LR' and t1.dept_id = :deptId and t1.platform = :platform ");
+        if (StringUtils.isNotBlank(startTime)) {
+            sql.append(" and t1.create_time >= :startTime");
+            param.put("startTime", startTime);
+        }
+        if (StringUtils.isNotBlank(endTime)) {
+            sql.append(" and t1.create_time <= :endTime");
+            param.put("endTime", endTime);
+        }
+        sql.append(" ) a")
+                .append(" join (select * from base_reduce_activity_record t2 where t2.activity_id = :activityId and t2.record_type = 'HR' and t2.dept_id = :deptId) b ")
+                .append(" on a.id = b.super_id order by b.create_time desc");
+        return commonDao.paginationNamedSQL(sql.toString(),param, bt.getRowIndex(), bt.getLimit(), BootstrapTableJson.class);
+    }
